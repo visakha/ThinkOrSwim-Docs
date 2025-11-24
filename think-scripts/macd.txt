@@ -1,0 +1,24 @@
+# MACD (Moving Average Convergence Divergence)
+# Plots the MACD indicator with signal line and histogram
+
+declare lower;
+
+input fastLength = 12;
+input slowLength = 26;
+input MACDLength = 9;
+input averageType = AverageType.EXPONENTIAL;
+input showBreakoutSignals = no;
+
+def Value = MovingAverage(averageType, close, fastLength) - MovingAverage(averageType, close, slowLength);
+def Avg = MovingAverage(averageType, Value, MACDLength);
+
+plot MACD = Value;
+plot Signal = Avg;
+plot Hist = Value - Avg;
+plot ZeroLine = 0;
+
+MACD.SetDefaultColor(Color.BLUE);
+Signal.SetDefaultColor(Color.RED);
+Hist.SetDefaultColor(Color.GRAY);
+Hist.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
+ZeroLine.SetDefaultColor(Color.YELLOW);

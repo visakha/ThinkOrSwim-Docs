@@ -1,0 +1,10 @@
+# Simple Moving Average
+# This script plots a simple moving average
+
+declare upper;
+
+input length = 20;
+input price = close;
+
+plot SMA = Average(price, length);
+SMA.SetDefaultColor(Color.CYAN);

@@ -10,17 +10,20 @@ See [USAGE.md](USAGE.md) for detailed instructions on how to use the ThinkScript
 ### Quick Start
 
 ```bash
-# List all scripts
+# Using the wrapper script (easier)
+./ts-manager list
+
+# Or directly with Java
 java ScriptManager.java list
 
 # View a script
-java ScriptManager.java view <filename>
+./ts-manager view <filename>
 
 # Add tags to a script
-java ScriptManager.java tag <filename> <tag1> <tag2> ...
+./ts-manager tag <filename> <tag1> <tag2> ...
 
 # Find scripts by tags
-java ScriptManager.java find <tag1> <tag2> ...
+./ts-manager find <tag1> <tag2> ...
 ```
 
 All scripts should be placed in the `think-scripts/` directory.

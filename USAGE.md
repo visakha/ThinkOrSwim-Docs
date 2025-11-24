@@ -18,51 +18,75 @@ A Java 25 command-line application for managing and organizing thinkScript files
 
 Place all your thinkScript files in the `think-scripts/` directory.
 
+### Quick Method (using wrapper script)
+
+```bash
+./ts-manager <command> [arguments]
+```
+
+### Direct Method
+
+```bash
+java ScriptManager.java <command> [arguments]
+```
+
 ### Commands
 
 #### List all scripts
 ```bash
+./ts-manager list
+# or
 java ScriptManager.java list
 ```
 
 #### View a script
 ```bash
+./ts-manager view <filename>
+# or
 java ScriptManager.java view <filename>
 ```
 
 #### Add tags to a script
 ```bash
+./ts-manager tag <filename> <tag1> [tag2] [tag3] ...
+# or
 java ScriptManager.java tag <filename> <tag1> [tag2] [tag3] ...
 ```
 
 Example:
 ```bash
-java ScriptManager.java tag simple_moving_average.txt moving-average trend beginner
+./ts-manager tag simple_moving_average.txt moving-average trend beginner
 ```
 
 #### Remove tags from a script
 ```bash
+./ts-manager untag <filename> <tag1> [tag2] ...
+# or
 java ScriptManager.java untag <filename> <tag1> [tag2] ...
 ```
 
 Example:
 ```bash
-java ScriptManager.java untag simple_moving_average.txt beginner
+./ts-manager untag simple_moving_average.txt beginner
 ```
 
 #### Find scripts by tags
 ```bash
+./ts-manager find <tag1> [tag2] ...
+# or
 java ScriptManager.java find <tag1> [tag2] ...
 ```
 
 Example:
 ```bash
-java ScriptManager.java find momentum
-java ScriptManager.java find beginner trend
+./ts-manager find momentum
+./ts-manager find beginner trend
 ```
 
 #### Show help
 ```bash
+./ts-manager help
+# or
 java ScriptManager.java help
 ```
 
@@ -75,22 +99,22 @@ java ScriptManager.java help
 
 2. List all scripts:
    ```bash
-   java ScriptManager.java list
+   ./ts-manager list
    ```
 
 3. View a script:
    ```bash
-   java ScriptManager.java view my_script.txt
+   ./ts-manager view my_script.txt
    ```
 
 4. Add tags to organize your scripts:
    ```bash
-   java ScriptManager.java tag my_script.txt indicator technical-analysis
+   ./ts-manager tag my_script.txt indicator technical-analysis
    ```
 
 5. Find scripts by tags:
    ```bash
-   java ScriptManager.java find indicator
+   ./ts-manager find indicator
    ```
 
 ## Metadata Storage

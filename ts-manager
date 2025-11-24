@@ -1,0 +1,8 @@
+#!/bin/bash
+# ThinkScript Manager - Wrapper script for easy execution
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Run the Java application
+java "$SCRIPT_DIR/ScriptManager.java" "$@"

@@ -1,0 +1,17 @@
+# Ignore metadata file (can be regenerated)
+think-scripts/.metadata.json
+
+# Java compiled files
+*.class
+*.jar
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Temporary files
+*.tmp
+*.swp
+*~

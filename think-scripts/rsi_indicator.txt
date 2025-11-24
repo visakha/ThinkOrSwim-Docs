@@ -1,0 +1,21 @@
+# Relative Strength Index (RSI)
+# Calculates and plots the RSI indicator
+
+declare lower;
+
+input length = 14;
+input over_Bought = 70;
+input over_Sold = 30;
+input price = close;
+
+def NetChgAvg = MovingAverage(AverageType.WILDERS, price - price[1], length);
+def TotChgAvg = MovingAverage(AverageType.WILDERS, AbsValue(price - price[1]), length);
+def ChgRatio = if TotChgAvg != 0 then NetChgAvg / TotChgAvg else 0;
+
+plot RSI = 50 * (ChgRatio + 1);
+plot OverSold = over_Sold;
+plot OverBought = over_Bought;
+
+RSI.SetDefaultColor(Color.CYAN);
+OverSold.SetDefaultColor(Color.GREEN);
+OverBought.SetDefaultColor(Color.RED);

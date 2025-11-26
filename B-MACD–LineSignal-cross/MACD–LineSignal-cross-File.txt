@@ -1,0 +1,35 @@
+declare lower;
+
+input fastLength = 12;
+input slowLength = 26;
+input macdLength = 9;
+
+def Value = MACD(fastLength, slowLength, macdLength).Value;
+def Avg   = MACD(fastLength, slowLength, macdLength).Avg;
+def Diff  = MACD(fastLength, slowLength, macdLength).Diff;
+
+plot MACDLine = Value;
+plot Signal   = Avg;
+plot Hist     = Diff;
+Hist.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
+
+MACDLine.SetDefaultColor(Color.CYAN);
+Signal.SetDefaultColor(Color.YELLOW);
+
+plot BullCross = Value[1] < Avg[1] and Value > Avg;
+BullCross.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+BullCross.SetDefaultColor(Color.GREEN);
+
+plot BearCross = Value[1] > Avg[1] and Value < Avg;
+BearCross.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+BearCross.SetDefaultColor(Color.RED);
+
+
+# Scan (bullish MACD):
+MACD().Value crosses above MACD().Avg
+
+# Scan (bear MACD):
+MACD().Value crosses below MACD().Avg
+
+
+

@@ -1,0 +1,21 @@
+declare lower;
+
+input length = 14;
+def vroc = (volume - volume[length]) / volume[length] * 100;
+
+plot VROC = vroc;
+VROC.SetDefaultColor(Color.WHITE);
+plot ZeroLine = 0;
+ZeroLine.SetDefaultColor(Color.GRAY);
+
+# Highlight spikes
+plot Spike = vroc > 50;
+Spike.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
+Spike.SetDefaultColor(Color.YELLOW);
+
+
+# ------------------------
+# Scan for big volume surge:
+
+(volume - volume[14]) / volume[14] * 100 > 50
+

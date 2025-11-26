@@ -1,0 +1,38 @@
+declare lower;
+
+input length = 14;
+input overBought = 70;
+input overSold = 30;
+
+def rsi = RSI(length = length);
+
+plot RSI_Line = rsi;
+RSI_Line.AssignValueColor(
+    if rsi > overBought then Color.RED
+    else if rsi < overSold then Color.GREEN
+    else Color.WHITE
+);
+
+plot OverBoughtLine = overBought;
+OverBoughtLine.SetDefaultColor(Color.RED);
+plot OverSoldLine = overSold;
+OverSoldLine.SetDefaultColor(Color.GREEN);
+
+# Bullish: crosses up through oversold
+plot BuySignal = rsi[1] < overSold and rsi > overSold;
+BuySignal.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+BuySignal.SetDefaultColor(Color.GREEN);
+
+# Bearish: crosses down through overbought
+plot SellSignal = rsi[1] > overBought and rsi < overBought;
+SellSignal.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+SellSignal.SetDefaultColor(Color.RED);
+
+
+# for Bullish RSI
+RSI(length = 14) crosses above 30
+
+# for Bearish RSI
+RSI(length = 14) crosses below 70
+
+

@@ -1,0 +1,48 @@
+declare lower;
+
+input length = 20;
+input numDev = 2.0;
+
+def price = close;
+def sma = Average(price, length);
+def sd = StDev(price, length);
+def upper = sma + numDev * sd;
+def lower = sma - numDev * sd;
+
+def bandwidth = (upper - lower) / sma;
+
+plot BandWidth = bandwidth;
+BandWidth.SetDefaultColor(Color.WHITE);
+
+# Squeeze: bandwidth in lowest 20% of last 252 bars (~1YR)
+def percRank = PercentRank(bandwidth, 252);
+plot Squeeze = percRank < 20;
+Squeeze.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
+Squeeze.SetDefaultColor(Color.YELLOW);
+
+
+# -------------------------------------------------------------
+# Scan for “in squeeze now”:
+def price = close;
+def sma = Average(price, 20);
+def sd = StDev(price, 20);
+def upper = sma + 2 * sd;
+def lower = sma - 2 * sd;
+def bandwidth = (upper - lower) / sma;
+
+PercentRank(bandwidth, 252) < 20
+
+
+# -------------------------------------------------------------
+# Scan for “breakout from squeeze up”:
+def price = close;
+def sma = Average(price, 20);
+def sd = StDev(price, 20);
+def upper = sma + 2 * sd;
+def lower = sma - 2 * sd;
+def bandwidth = (upper - lower) / sma;
+
+def inSqueeze = PercentRank(bandwidth, 252) < 20;
+inSqueeze[1] and price > upper
+
+

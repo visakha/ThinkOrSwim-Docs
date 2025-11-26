@@ -1,0 +1,22 @@
+declare lower;
+
+input length = 20;
+
+def sma = Average(close, length);
+def distPct = (close - sma) / sma * 100;
+
+plot DistPct = distPct;
+DistPct.SetDefaultColor(Color.WHITE);
+plot ZeroLine = 0;
+ZeroLine.SetDefaultColor(Color.GRAY);
+
+plot OverExtendedUp = distPct > 15;
+OverExtendedUp.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
+OverExtendedUp.SetDefaultColor(Color.RED);
+
+plot DeepPullback = distPct < -15;
+DeepPullback.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
+DeepPullback.SetDefaultColor(Color.GREEN);
+
+
+# You can duplicate this with different length values: 10, 20, 50, 200.

@@ -1,0 +1,26 @@
+declare lower;
+
+input kPeriod = 5;
+input dPeriod = 3;
+
+def stochSlowK = StochasticFull(kPeriod, dPeriod, dPeriod).FullK;
+
+plot K = stochSlowK;
+K.SetDefaultColor(Color.WHITE);
+
+plot OverBought = 80;
+OverBought.SetDefaultColor(Color.RED);
+plot OverSold = 20;
+OverSold.SetDefaultColor(Color.GREEN);
+
+# Bullish: K turns up from below 20
+plot BullTurn = K[1] < 20 and K > 20;
+BullTurn.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+BullTurn.SetDefaultColor(Color.GREEN);
+
+# Bearish: K turns down from above 80
+plot BearTurn = K[1] > 80 and K < 80;
+BearTurn.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+BearTurn.SetDefaultColor(Color.RED);
+
+

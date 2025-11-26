@@ -1,0 +1,27 @@
+input fastLength = 10;
+input slowLength = 20;
+
+def fast = Average(close, fastLength);
+def slow = Average(close, slowLength);
+
+plot FastLine = fast;
+plot SlowLine = slow;
+
+FastLine.SetDefaultColor(Color.CYAN);
+SlowLine.SetDefaultColor(Color.YELLOW);
+
+plot BullCross = fast[1] < slow[1] and fast > slow;
+BullCross.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+BullCross.SetDefaultColor(Color.GREEN);
+
+plot BearCross = fast[1] > slow[1] and fast < slow;
+BearCross.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+BearCross.SetDefaultColor(Color.RED);
+
+# For 10 & 20 Day Cross: fastLength=10, slowLength=20
+# For 20 & 50 Day Cross: fastLength=20, slowLength=50
+# For 50 & 200 Day Cross: fastLength=50, slowLength=200
+# Scan example (10/20 bullish):
+Average(close, 10) crosses above Average(close, 20)
+
+

@@ -1,0 +1,342 @@
+declare lower;
+
+########################################
+# MASTER STUDY – CMG_Style_Indicators  #
+# Works for any symbol / timeframe     #
+########################################
+
+#####################
+# User Inputs
+#####################
+input showRSI        = yes;
+input showMACD       = yes;
+input showBollinger  = yes;
+input showSqueeze    = yes;
+input showSMACross   = yes;
+input showStoch      = yes;
+input showVROC       = yes;
+input showDMI        = yes;
+input showPSAR       = yes;
+input showDistSMA    = yes;
+
+input rsiLength      = 14;
+input rsiOverBought  = 70;
+input rsiOverSold    = 30;
+
+input bbLength       = 20;
+input bbNumDev       = 2.0;
+
+input vrocLength     = 14;
+input vrocSpikePct   = 50;
+
+input stochK         = 5;
+input stochD         = 3;
+
+input dmiLength      = 14;
+input adxTrendLevel  = 20;
+
+input smaFast1       = 10;
+input smaSlow1       = 20;
+
+input smaFast2       = 20;
+input smaSlow2       = 50;
+
+input smaFast3       = 50;
+input smaSlow3       = 200;
+
+input distSMALength1 = 10;
+input distSMALength2 = 20;
+input distSMALength3 = 50;
+input distSMALength4 = 200;
+input distExtremePct = 15;
+
+
+#####################
+# Helper series
+#####################
+def price = close;
+def vol   = volume;
+
+#####################
+# RSI
+#####################
+def rsi = RSI(length = rsiLength);
+
+plot RSI_Line = if showRSI then rsi else Double.NaN;
+RSI_Line.SetDefaultColor(Color.WHITE);
+
+plot RSI_OverBought = if showRSI then rsiOverBought else Double.NaN;
+RSI_OverBought.SetDefaultColor(Color.RED);
+
+plot RSI_OverSold = if showRSI then rsiOverSold else Double.NaN;
+RSI_OverSold.SetDefaultColor(Color.GREEN);
+
+# Signals
+def rsiBullCond = rsi[1] < rsiOverSold and rsi > rsiOverSold;
+def rsiBearCond = rsi[1] > rsiOverBought and rsi < rsiOverBought;
+
+plot RSI_Buy = showRSI and rsiBullCond;
+RSI_Buy.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+RSI_Buy.SetDefaultColor(Color.GREEN);
+
+plot RSI_Sell = showRSI and rsiBearCond;
+RSI_Sell.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+RSI_Sell.SetDefaultColor(Color.RED);
+
+
+#####################
+# MACD
+#####################
+def macdVal = MACD().Value;
+def macdAvg = MACD().Avg;
+def macdDiff = MACD().Diff;
+
+plot MACD_Line = if showMACD then macdVal else Double.NaN;
+MACD_Line.SetDefaultColor(Color.CYAN);
+
+plot MACD_Signal = if showMACD then macdAvg else Double.NaN;
+MACD_Signal.SetDefaultColor(Color.YELLOW);
+
+plot MACD_Hist = if showMACD then macdDiff else Double.NaN;
+MACD_Hist.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
+MACD_Hist.SetDefaultColor(Color.LIGHT_GRAY);
+
+def macdBullCond = macdVal[1] < macdAvg[1] and macdVal > macdAvg;
+def macdBearCond = macdVal[1] > macdAvg[1] and macdVal < macdAvg;
+
+plot MACD_Buy = showMACD and macdBullCond;
+MACD_Buy.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+MACD_Buy.SetDefaultColor(Color.GREEN);
+
+plot MACD_Sell = showMACD and macdBearCond;
+MACD_Sell.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+MACD_Sell.SetDefaultColor(Color.RED);
+
+
+#####################
+# Bollinger Bands + Squeeze
+#####################
+def bbMid   = Average(price, bbLength);
+def bbStd   = StDev(price, bbLength);
+def bbUpper = bbMid + bbNumDev * bbStd;
+def bbLower = bbMid - bbNumDev * bbStd;
+
+plot BB_Mid   = if showBollinger then bbMid   else Double.NaN;
+plot BB_Upper = if showBollinger then bbUpper else Double.NaN;
+plot BB_Lower = if showBollinger then bbLower else Double.NaN;
+BB_Mid.SetDefaultColor(Color.YELLOW);
+BB_Upper.SetDefaultColor(Color.GRAY);
+BB_Lower.SetDefaultColor(Color.GRAY);
+
+# Squeeze width normalized
+def bbWidth = (bbUpper - bbLower) / bbMid;
+
+# Use 252 bars (~1 year) percentile for squeeze
+def squeezeRank = PercentRank(bbWidth, 252);
+def squeezeCond = squeezeRank < 20;
+
+plot BB_Squeeze = showSqueeze and squeezeCond;
+BB_Squeeze.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
+BB_Squeeze.SetDefaultColor(Color.YELLOW);
+
+# Breakouts from squeeze
+def wasSqueezed = squeezeCond[1];
+def bbBreakUp   = wasSqueezed and price > bbUpper;
+def bbBreakDown = wasSqueezed and price < bbLower;
+
+plot BB_Squeeze_Breakout_Up = showSqueeze and bbBreakUp;
+BB_Squeeze_Breakout_Up.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+BB_Squeeze_Breakout_Up.SetDefaultColor(Color.GREEN);
+
+plot BB_Squeeze_Breakout_Down = showSqueeze and bbBreakDown;
+BB_Squeeze_Breakout_Down.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+BB_Squeeze_Breakout_Down.SetDefaultColor(Color.RED);
+
+
+#####################
+# SMA Crosses (10/20, 20/50, 50/200)
+#####################
+def smaF1 = Average(price, smaFast1);
+def smaS1 = Average(price, smaSlow1);
+
+def smaF2 = Average(price, smaFast2);
+def smaS2 = Average(price, smaSlow2);
+
+def smaF3 = Average(price, smaFast3);
+def smaS3 = Average(price, smaSlow3);
+
+plot SMA_Fast1 = if showSMACross then smaF1 else Double.NaN;
+plot SMA_Slow1 = if showSMACross then smaS1 else Double.NaN;
+SMA_Fast1.SetDefaultColor(Color.CYAN);
+SMA_Slow1.SetDefaultColor(Color.MAGENTA);
+
+plot SMA_Fast2 = if showSMACross then smaF2 else Double.NaN;
+plot SMA_Slow2 = if showSMACross then smaS2 else Double.NaN;
+
+plot SMA_Fast3 = if showSMACross then smaF3 else Double.NaN;
+plot SMA_Slow3 = if showSMACross then smaS3 else Double.NaN;
+
+def bullCross1 = smaF1[1] < smaS1[1] and smaF1 > smaS1;
+def bearCross1 = smaF1[1] > smaS1[1] and smaF1 < smaS1;
+
+def bullCross2 = smaF2[1] < smaS2[1] and smaF2 > smaS2;
+def bearCross2 = smaF2[1] > smaS2[1] and smaF2 < smaS2;
+
+def bullCross3 = smaF3[1] < smaS3[1] and smaF3 > smaS3;
+def bearCross3 = smaF3[1] > smaS3[1] and smaF3 < smaS3;
+
+plot SMA10_20_Buy = showSMACross and bullCross1;
+SMA10_20_Buy.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+SMA10_20_Buy.SetDefaultColor(Color.GREEN);
+
+plot SMA10_20_Sell = showSMACross and bearCross1;
+SMA10_20_Sell.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+SMA10_20_Sell.SetDefaultColor(Color.RED);
+
+plot SMA20_50_Buy = showSMACross and bullCross2;
+SMA20_50_Buy.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+SMA20_50_Buy.SetDefaultColor(Color.GREEN);
+
+plot SMA20_50_Sell = showSMACross and bearCross2;
+SMA20_50_Sell.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+SMA20_50_Sell.SetDefaultColor(Color.RED);
+
+plot SMA50_200_Buy = showSMACross and bullCross3;
+SMA50_200_Buy.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+SMA50_200_Buy.SetDefaultColor(Color.GREEN);
+
+plot SMA50_200_Sell = showSMACross and bearCross3;
+SMA50_200_Sell.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+SMA50_200_Sell.SetDefaultColor(Color.RED);
+
+
+#####################
+# Stochastic Oscillator (5)
+#####################
+def fullK = StochasticFull(kPeriod = stochK, dPeriod = stochD, slowingPeriod = stochD).FullK;
+
+plot Stoch_K = if showStoch then fullK else Double.NaN;
+Stoch_K.SetDefaultColor(Color.WHITE);
+
+plot Stoch_OverBought = if showStoch then 80 else Double.NaN;
+plot Stoch_OverSold   = if showStoch then 20 else Double.NaN;
+Stoch_OverBought.SetDefaultColor(Color.RED);
+Stoch_OverSold.SetDefaultColor(Color.GREEN);
+
+def stochBullCond = fullK[1] < 20 and fullK > 20;
+def stochBearCond = fullK[1] > 80 and fullK < 80;
+
+plot Stoch_Buy = showStoch and stochBullCond;
+Stoch_Buy.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+Stoch_Buy.SetDefaultColor(Color.GREEN);
+
+plot Stoch_Sell = showStoch and stochBearCond;
+Stoch_Sell.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+Stoch_Sell.SetDefaultColor(Color.RED);
+
+
+#####################
+# VROC (Volume Rate of Change)
+#####################
+def vroc = (vol - vol[vrocLength]) / vol[vrocLength] * 100;
+
+plot VROC_Line = if showVROC then vroc else Double.NaN;
+VROC_Line.SetDefaultColor(Color.WHITE);
+
+plot VROC_Zero = if showVROC then 0 else Double.NaN;
+VROC_Zero.SetDefaultColor(Color.GRAY);
+
+def vrocSpikeUpCond   = vroc >  vrocSpikePct;
+def vrocSpikeDownCond = vroc < -vrocSpikePct;
+
+plot VROC_Spike_Up = showVROC and vrocSpikeUpCond;
+VROC_Spike_Up.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
+VROC_Spike_Up.SetDefaultColor(Color.GREEN);
+
+plot VROC_Spike_Down = showVROC and vrocSpikeDownCond;
+VROC_Spike_Down.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
+VROC_Spike_Down.SetDefaultColor(Color.RED);
+
+
+#####################
+# DMI / ADX
+#####################
+def plusDI  = DMI(length = dmiLength).PlusDI;
+def minusDI = DMI(length = dmiLength).MinusDI;
+def adx     = DMI(length = dmiLength).ADX;
+
+plot Plus_DI  = if showDMI then plusDI  else Double.NaN;
+plot Minus_DI = if showDMI then minusDI else Double.NaN;
+plot ADX_Line = if showDMI then adx     else Double.NaN;
+Plus_DI.SetDefaultColor(Color.GREEN);
+Minus_DI.SetDefaultColor(Color.RED);
+ADX_Line.SetDefaultColor(Color.YELLOW);
+
+def dmiBullCond = plusDI[1] <= minusDI[1] and plusDI > minusDI and adx > adxTrendLevel;
+def dmiBearCond = minusDI[1] <= plusDI[1] and minusDI > plusDI and adx > adxTrendLevel;
+
+plot DMI_Buy = showDMI and dmiBullCond;
+DMI_Buy.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+DMI_Buy.SetDefaultColor(Color.GREEN);
+
+plot DMI_Sell = showDMI and dmiBearCond;
+DMI_Sell.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+DMI_Sell.SetDefaultColor(Color.RED);
+
+
+#####################
+# Parabolic SAR
+#####################
+def psar = ParabolicSAR();
+
+plot PSAR_Line = if showPSAR then psar else Double.NaN;
+PSAR_Line.SetDefaultColor(Color.LIGHT_GRAY);
+
+def psarBullCond = psar[1] > price[1] and psar < price;
+def psarBearCond = psar[1] < price[1] and psar > price;
+
+plot PSAR_Buy = showPSAR and psarBullCond;
+PSAR_Buy.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_UP);
+PSAR_Buy.SetDefaultColor(Color.GREEN);
+
+plot PSAR_Sell = showPSAR and psarBearCond;
+PSAR_Sell.SetPaintingStrategy(PaintingStrategy.BOOLEAN_ARROW_DOWN);
+PSAR_Sell.SetDefaultColor(Color.RED);
+
+
+#####################
+# Price Distance from SMAs
+#####################
+def smaD1 = Average(price, distSMALength1);
+def smaD2 = Average(price, distSMALength2);
+def smaD3 = Average(price, distSMALength3);
+def smaD4 = Average(price, distSMALength4);
+
+def dist1 = (price - smaD1) / smaD1 * 100;
+def dist2 = (price - smaD2) / smaD2 * 100;
+def dist3 = (price - smaD3) / smaD3 * 100;
+def dist4 = (price - smaD4) / smaD4 * 100;
+
+plot Dist_SMA10  = if showDistSMA then dist1 else Double.NaN;
+plot Dist_SMA20  = if showDistSMA then dist2 else Double.NaN;
+plot Dist_SMA50  = if showDistSMA then dist3 else Double.NaN;
+plot Dist_SMA200 = if showDistSMA then dist4 else Double.NaN;
+
+Dist_SMA10.SetDefaultColor(Color.WHITE);
+Dist_SMA20.SetDefaultColor(Color.YELLOW);
+Dist_SMA50.SetDefaultColor(Color.CYAN);
+Dist_SMA200.SetDefaultColor(Color.MAGENTA);
+
+# Overextended / deep pullback flags (using SMA20 as example)
+def distUpCond   = dist2 >  distExtremePct;
+def distDownCond = dist2 < -distExtremePct;
+
+plot Dist_Extreme_Up = showDistSMA and distUpCond;
+Dist_Extreme_Up.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
+Dist_Extreme_Up.SetDefaultColor(Color.RED);
+
+plot Dist_Extreme_Down = showDistSMA and distDownCond;
+Dist_Extreme_Down.SetPaintingStrategy(PaintingStrategy.HISTOGRAM);
+Dist_Extreme_Down.SetDefaultColor(Color.GREEN);
+
+
